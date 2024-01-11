@@ -1,0 +1,120 @@
+ysql> CREATE TABLE gift_recipients (recipient_id INTEGER AUTO_INCREMENT PRIMARY KEY, recipient_name VARCHAR(50));
+Query OK, 0 rows affected (0,03 sec)
+
+mysql> CREATE TABLE gifts (gift_id INTEGER AUTO_INCREMENT PRIMARY KEY, gift_name VARCHAR(50), reciepient_id INTEGER FORIEGN KEY);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FORIEGN KEY)' at line 1
+mysql> CREATE TABLE gifts (gift_id INTEGER AUTO_INCREMENT PRIMARY KEY, gift_name VARCHAR(50), reciepient_id INTEGER);
+Query OK, 0 rows affected (0,03 sec)
+
+mysql> INSERT TO gift_recipients (recipient_name) VALUES ("John"),("Mary"),("Sarah"),("Tom"),("Emily");
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'TO gift_recipients (recipient_name) VALUES ("John"),("Mary"),("Sarah"),("Tom"),(' at line 1
+mysql> INSERT INTO gift_recipients (recipient_name) VALUES ("John"),("Mary"),("Sarah"),("Tom"),("Emily");
+Query OK, 5 rows affected (0,02 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO gifts (gift_name,recipient_id) VALUES ("Toy A",1),("Book B", 2),("Candy C",1),("Toy D",3),("Book E",6);
+ERROR 1054 (42S22): Unknown column 'recipient_id' in 'field list'
+mysql> describ gifts;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'describ gifts' at line 1
+mysql> describe gifts;
++---------------+-------------+------+-----+---------+----------------+
+| Field         | Type        | Null | Key | Default | Extra          |
++---------------+-------------+------+-----+---------+----------------+
+| gift_id       | int         | NO   | PRI | NULL    | auto_increment |
+| gift_name     | varchar(50) | YES  |     | NULL    |                |
+| reciepient_id | int         | YES  |     | NULL    |                |
++---------------+-------------+------+-----+---------+----------------+
+3 rows in set (0,00 sec)
+
+mysql> INSERT INTO gifts (gift_name,recipient_id) VALUES ("Toy A",1),("Book B", 2),("Candy C",1),("Toy D",3),("Book E",6);
+ERROR 1054 (42S22): Unknown column 'recipient_id' in 'field list'
+mysql> ALTER TABLE gifts
+    -> CHANGE COLUMN reciepient_id recipient_id INTEGER;
+Query OK, 0 rows affected (0,02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO gifts (gift_name,recipient_id) VALUES ("Toy A",1),("Book B", 2),("Candy C",1),("Toy D",3),("Book E",6);
+Query OK, 5 rows affected (0,00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> describe gifts;
++--------------+-------------+------+-----+---------+----------------+
+| Field        | Type        | Null | Key | Default | Extra          |
++--------------+-------------+------+-----+---------+----------------+
+| gift_id      | int         | NO   | PRI | NULL    | auto_increment |
+| gift_name    | varchar(50) | YES  |     | NULL    |                |
+| recipient_id | int         | YES  |     | NULL    |                |
++--------------+-------------+------+-----+---------+----------------+
+3 rows in set (0,00 sec)
+
+mysql> SELECT * FROM gifts;
++---------+-----------+--------------+
+| gift_id | gift_name | recipient_id |
++---------+-----------+--------------+
+|       1 | Toy A     |            1 |
+|       2 | Book B    |            2 |
+|       3 | Candy C   |            1 |
+|       4 | Toy D     |            3 |
+|       5 | Book E    |            6 |
++---------+-----------+--------------+
+5 rows in set (0,00 sec)
+
+mysql> SELECT * FROM gift_recipients;
++--------------+----------------+
+| recipient_id | recipient_name |
++--------------+----------------+
+|            1 | John           |
+|            2 | Mary           |
+|            3 | Sarah          |
+|            4 | Tom            |
+|            5 | Emily          |
++--------------+----------------+
+5 rows in set (0,00 sec)
+
+mysql> SELECT r.reciepent_id, r.recipient_name,g.gift_name FROM gift_recipients r LEFT JOIN gifts g ON r.reciepent_id = g.recipient_id;
+ERROR 1054 (42S22): Unknown column 'r.reciepent_id' in 'field list'
+mysql> SELECT r.reciepent_id, r.recipient_name,g.gift_name FROM gift_recipients r LEFT JOIN gifts g ON r.recipient_id = g.recipient_id;
+ERROR 1054 (42S22): Unknown column 'r.reciepent_id' in 'field list'
+mysql> SELECT r.recipient_id, r.recipient_name,g.gift_name FROM gift_recipients r LEFT JOIN gifts g ON r.recipient_id = g.recipient_id;
++--------------+----------------+-----------+
+| recipient_id | recipient_name | gift_name |
++--------------+----------------+-----------+
+|            1 | John           | Candy C   |
+|            1 | John           | Toy A     |
+|            2 | Mary           | Book B    |
+|            3 | Sarah          | Toy D     |
+|            4 | Tom            | NULL      |
+|            5 | Emily          | NULL      |
++--------------+----------------+-----------+
+6 rows in set (0,00 sec)
+
+mysql> SELECT g.gift_id, r.recipient_name,g.gift_name FROM gift_recipients r RIGHT JOIN gifts g ON r.recipient_id = g.recipient_id;
++---------+----------------+-----------+
+| gift_id | recipient_name | gift_name |
++---------+----------------+-----------+
+|       1 | John           | Toy A     |
+|       2 | Mary           | Book B    |
+|       3 | John           | Candy C   |
+|       4 | Sarah          | Toy D     |
+|       5 | NULL           | Book E    |
++---------+----------------+-----------+
+5 rows in set (0,00 sec)
+
+mysql> SELECT r.recipient_id, r.recipient_name,g.gift_name FROM gift_recipients r LEFT JOIN gifts g ON r.recipient_id = g.recipient_id UNION SELECT g.gift_id, r.recipient_name,g.gift_name FROM gift_recipients r RIGHT JOIN gifts g ON r.recipient_id = g.recipient_id;
++--------------+----------------+-----------+
+| recipient_id | recipient_name | gift_name |
++--------------+----------------+-----------+
+|            1 | John           | Candy C   |
+|            1 | John           | Toy A     |
+|            2 | Mary           | Book B    |
+|            3 | Sarah          | Toy D     |
+|            4 | Tom            | NULL      |
+|            5 | Emily          | NULL      |
+|            3 | John           | Candy C   |
+|            4 | Sarah          | Toy D     |
+|            5 | NULL           | Book E    |
++--------------+----------------+-----------+
+9 rows in set (0,00 sec)
+
+mysql> 
+
